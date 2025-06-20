@@ -1,66 +1,76 @@
+
+"""Rock Paper Scissors game implemented using object-oriented programming."""
+
 import random
 
 class Player:
+    """Base class for players in the Rock Paper Scissors game."""
     CHOICES = ['rock', 'paper', 'scissors']
-    def __init__(self, player_type):
-        # Type of player: 'human' or 'computer'
+    def __init__(self):
         # A player has choices and a move
-        self._player = player_type.lower()
         self.move = None
 
+
+class Human(Player):
+    """A player that chooses moves via user input."""
+    super().__init__()
+
     def choose(self):
-        if self._player == 'human':
-            while True:
-                choice = input('Choose your move (rock, paper, scissors): ').lower()
-                if choice in Player.CHOICES:
-                    break
-                else:
-                    print("Invalid move. Please try again.")
-            self.move = choice
-        else:
-            self.move = random.choice(Player.CHOICES)
+        """Prompt the user to choose a move and set self.move."""
+        while True:
+            choice = input('Choose your move (rock, paper, scissors): ').lower()
+            if choice in Player.CHOICES:
+                break
+            print("Invalid move. Please try again.")
+        self.move = choice
 
-    def _display_welcome_message(self):
-        print(f'Welcome to Rock Paper Scissors')
 
-    def _display_goodbye_message(self):
-        print(f'Thanks for playing Rock Paper Scissors. Goodbye!')
+class Computer(Player):
+    """A player that chooses moves randomly."""
+    super().__init__()
 
-class Move:
-    def __init__(self):
-        # This seems like we need something to keep track
-        # of the choice... a move object can be "paper", "rock" or "scissors"
-        pass
+    def choose(self):
+        """Randomly select a move and set self.move."""
+        self.move = random.choice(Player.CHOICES)
 
 class Rule:
-    def __init__(self):
-        # not sure what the "state" of a rule object should be
-        pass
+    """Manages the rules for determining the winner in Rock Paper Scissors."""
+    winning_rules = {
+            ('rock', 'scissors'): 'rock crushes scissors',
+            ('paper', 'rock'): 'paper covers rock',
+            ('scissors', 'paper'): 'scissors cut paper'
+        }
 
-    # not sure where "compare" goes yet
+
     def compare(self, human_move, computer_move):
+        """Compare human and computer moves to determine the winner."""
         if human_move == computer_move:
             print("It's a tie!")
-        elif (human_move == 'rock' and computer_move == 'scissors') or \
-             (human_move == 'paper' and computer_move == 'rock') or \
-             (human_move == 'scissors' and computer_move == 'paper'):
-            print("You win!")
+        elif (human_move, computer_move) in self.winning_rules:
+            print(f"You win: {self.winning_rules[(human_move, computer_move)]}!")
         else:
-            print("Computer wins!")
+            # Infer the computer's winning message by reversing the moves
+            reverse_key = (computer_move, human_move)
+            message = self.winning_rules.get(reverse_key, f"{computer_move} beats {human_move}")
+            print(f"Computer wins: {message}!")
 
 
 class RPSGame(Rule):
+    """Main game class that orchestrates the Rock Paper Scissors game."""
     def __init__(self):
-        self._human = Player("human")
-        self._computer = Player("computer")
+        self._human = Human()
+        self._computer = Computer()
 
     def _display_welcome_message(self):
+        """Display the welcome message for the game."""
         print('Welcome to Rock Paper Scissors!')
 
     def _display_goodbye_message(self):
+        """Display the goodbye message when the game ends."""
         print('Thanks for playing Rock Paper Scissors. Goodbye!')
 
     def _display_winner(self):
+        """Display the players' moves and the game result."""
         human_move = self._human.move
         computer_move = self._computer.move
 
@@ -70,19 +80,21 @@ class RPSGame(Rule):
         self.compare(human_move, computer_move)
 
     def _play_again(self):
+        """Ask if the user wants to play another round."""
         while True:
             play_again = input('Do you want to play again? (yes/no): ').lower()
             if play_again in ['yes', 'no']:
                 return play_again == 'yes'
-            else:
-                print("Invalid input. Please enter 'yes' or 'no'.")
+            print("Invalid input. Please enter 'yes' or 'no'.")
 
     def _play_round(self):
+        """Play a single round of the game."""
         self._human.choose()
         self._computer.choose()
         self._display_winner()
 
     def play(self):
+        """Run the main game loop."""
         self._display_welcome_message()
         while True:
             self._play_round()
