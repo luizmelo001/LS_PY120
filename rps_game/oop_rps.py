@@ -89,6 +89,8 @@ class RPSGame(Rule):
         super().__init__() # Initialize Rule's scorekeeping
         self._human = Human()
         self._computer = Computer()
+        self.move_history = [] # List to store move history
+        self.round_count = 0 # Track current round
 
     def _display_welcome_message(self):
         """Display the welcome message for the game."""
@@ -106,6 +108,17 @@ class RPSGame(Rule):
             print('Game ended without a winner.')
 
         print('Thanks for playing Rock Paper Scissors. Goodbye!')
+
+    def _display_move_history(self):
+        """Display the history of moves made during the round."""
+        if not self.move_history:
+            print("No moves have been made yet.")
+            return
+        print("\nMove History:")
+        print("Round | Human   | Computer")
+        print("------|---------|---------")
+        for round_num, human_move, computer_move in self.move_history:
+            print(f"{round_num:<6}| {human_move:<7} | {computer_move:<8}")
 
     def _display_winner(self):
         """Display the players' moves and the game result."""
@@ -126,9 +139,13 @@ class RPSGame(Rule):
 
     def _play_round(self):
         """Play a single round of the game."""
+        self.round_count += 1
         self._human.choose()
         self._computer.choose()
         self._display_winner()
+        #add moves to history
+        self.move_history.append((self.round_count, self._human.move, self._computer.move))
+        self._display_move_history()
 
     def play(self):
         """Run the main game loop."""
