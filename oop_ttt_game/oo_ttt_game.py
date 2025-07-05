@@ -88,6 +88,29 @@ class TTTGame:
         self.board = Board()
         self.human = Human(Square.HUMAN_MARKER)
         self.computer = Computer(Square.COMPUTER_MARKER)
+        self.human_score = 0
+        self.computer_score = 0
+        self.draws = 0
+        self.max_score = self.get_max_score()
+        
+        
+    def get_max_score(self):
+        """Prompt for the maximum score to win the game.
+
+        Returns:
+            int: The maximum score specified by the player.
+        """
+        while True:
+            try:
+                max_score = int(input("Enter the maximum score to win the game (1 or more): ").strip())
+                if max_score > 0:
+                    self.max_score = max_score
+                    print(f"Maximum score set to {self.max_score}.")
+                    return max_score
+                else:
+                    print("Please enter a positive integer.")
+            except ValueError:
+                print("Invalid input. Please enter a valid number.")
 
     def display_welcome_message(self):
         """Display the welcome message for the game."""
@@ -97,6 +120,17 @@ class TTTGame:
         """Display the goodbye message when the game ends."""
         print("Thanks for playing! Goodbye!")
 
+    def join_or(self, items, delimiter=', ', final_delimiter=' or '):
+        """Join a list of items into a string with proper delimiters."""
+        if len(items) == 0:
+            return ''
+        elif len(items) == 1:
+            return str(items[0])
+        elif len(items) == 2:
+            return f"{items[0]}{final_delimiter}{items[1]}"
+        else:
+            return f"{delimiter.join(map(str, items[:-1]))}{final_delimiter}{items[-1]}"
+
     def human_moves(self):
         """Prompt the human player to choose a square and mark it."""
         while True:
@@ -104,9 +138,8 @@ class TTTGame:
                 key for key, square in self.board.squares.items()
                 if square.marker == Square.INITIAL_MARKER
             ]
-            available_squares_str = ', '.join(map(str, available_squares))
             choice_input = input(
-                f"Choose one of the available squares ({available_squares_str}): "
+                f"Choose one of the available squares ({self.join_or(available_squares)}): "
             )
             if choice_input.isdigit():
                 choice = int(choice_input)
@@ -157,33 +190,59 @@ class TTTGame:
         """Display the game result (win or draw)."""
         if self.check_winner():
             if self.is_winner(self.human):
+                self.human_score += 1
                 print("Player wins!")
             elif self.is_winner(self.computer):
+                self.computer_score += 1
                 print("Computer wins!")
-        else:
+        else:   
+            self.draws += 1
             print("It's a draw!")
+    
+    def display_scores(self):
+        """Display the current scores of both players and draws."""
+        print(f"\nScores: Player: {self.human_score}, Computer: {self.computer_score}, Draws: {self.draws}\n")
+
+    def play_again(self):
+        """Ask the players if they want to play again."""
+        while True:
+            answer = input("Do you want to play again? (y/n): ").strip().lower()
+            if answer in ('y', 'yes'):
+                self.board = Board()
+                return True
+            if answer in ('n', 'no'):
+                return False
+            print("Invalid input. Please enter 'y' or 'n'.")
 
     def play(self):
         """Run the main game loop."""
         self.display_welcome_message()
-        while True:
+        while self.human_score < self.max_score and self.computer_score < self.max_score:
             self.board.display()
             self.human_moves()
             if self.is_game_over():
                 self.board.display()
                 self.display_winner()
+                self.display_scores()
+                if (self.human_score < self.max_score and
+                        self.computer_score < self.max_score and
+                        self.play_again()):
+                    continue
                 break
+                    
             self.computer_moves()
             if self.is_game_over():
                 self.board.display()
                 self.display_winner()
+                self.display_scores()
+                if (self.human_score < self.max_score and
+                        self.computer_score < self.max_score and
+                        self.play_again()):
+                    continue
                 break
+        
+        print(f"Final Scores: Player: {self.human_score}, Computer: {self.computer_score}, Draws: {self.draws}")
         self.display_goodbye_message()
-
-
-if __name__ == "__main__":
-    ttt = TTTGame()
-    ttt.play()
 
 ttt = TTTGame()
 ttt.play()
