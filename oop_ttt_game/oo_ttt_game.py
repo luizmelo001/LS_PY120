@@ -150,7 +150,42 @@ class TTTGame:
                 print("Invalid choice. Square is taken or doesn't exist.")
             print("Invalid input. Please enter a number.")
 
+    def find_winning_move(self, player):
+        """Check if the player can win in the next move."""
+        for combination in TTTGame.WINNING_COMBINATIONS:
+            markers = [self.board.squares[i].marker for i in combination]
+            if markers.count(self.computer.marker) == 2 and markers.count(Square.INITIAL_MARKER) == 1:
+                return combination[markers.index(Square.INITIAL_MARKER)]
+        return None
+
+    def find_blocking_move(self):
+        """Check if the computer needs to block the human's winning move."""
+        for combination in TTTGame.WINNING_COMBINATIONS:
+            markers = [self.board.squares[i].marker for i in combination]
+            if markers.count(self.human.marker) == 2 and markers.count(Square.INITIAL_MARKER) == 1:
+                return combination[markers.index(Square.INITIAL_MARKER)]
+        return None
+
     def computer_moves(self):
+        """Select a square for the computer: win, block, or random."""
+
+        """Check if the computer can win in the next move."""
+        winning_move = self.find_winning_move(self.computer)
+        if winning_move:
+            self.board.mark_square(winning_move, self.computer.marker)
+            return  
+
+        """Check if the human player can win in the next move and block it."""
+        blocking_move = self.find_blocking_move()
+        if blocking_move:
+            self.board.mark_square(blocking_move, self.computer.marker)
+            return
+
+        """Check if the center square is available and mark it."""
+        if self.board.squares[5].marker == Square.INITIAL_MARKER:
+            self.board.mark_square(5, self.computer.marker)
+            return       
+
         """Select a random square for the computer and mark it."""
         available_squares = [
             key for key, square in self.board.squares.items()
